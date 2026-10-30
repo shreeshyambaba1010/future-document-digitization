@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b78"><title>Future Document Digitization Work</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5fb;color:#18263b;font-family:Arial,"Noto Sans Devanagari",sans-serif}
+header{background:linear-gradient(120deg,#102e61,#1769d2);color:#fff;text-align:center;padding:22px 14px}h1{font-size:clamp(20px,5vw,28px);margin:0 0 7px}header p{margin:0;font-size:14px}
+main{max-width:850px;margin:18px auto;padding:0 13px 35px}.card{background:#fff;border-radius:16px;padding:17px;margin-bottom:14px;box-shadow:0 4px 18px #123b7810}
+h2{font-size:19px;color:#123b78;margin:0 0 9px}.hint{font-size:14px;line-height:1.5;color:#5c6879;margin:0 0 14px}
+.row{display:flex;gap:10px}.row>*{flex:1}button{border:0;border-radius:11px;padding:14px 10px;min-height:50px;font-size:15px;font-weight:800;cursor:pointer}
+.blue{background:#1769d2;color:#fff}.green{background:#168b55;color:#fff}.light{background:#eaf2ff;color:#123b78;border:1px solid #d5e3f8}
+input[type=file]{position:absolute;left:-9999px;width:1px;height:1px}textarea{width:100%;min-height:300px;padding:13px;border:1px solid #d3dce9;border-radius:10px;font:15px/1.6 Arial,"Noto Sans Devanagari",sans-serif;white-space:pre-wrap}
+.preview{width:100%;max-height:330px;object-fit:contain;background:#eef2f7;border-radius:10px;margin-top:12px}.status{font-size:13px;color:#58677b;line-height:1.45;margin-top:10px;min-height:18px}
+.paper{background:#fff;color:#111;padding:22px;border:1px solid #ddd;white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.65 Arial,"Noto Sans Devanagari",sans-serif}
+button:disabled{opacity:.45}.warn{padding:12px;background:#fff7e5;border:1px solid #f0dfae;border-radius:10px;color:#6d531b;font-size:13px;line-height:1.5}
+@media(max-width:500px){.row{flex-direction:column}}
+@media print{header,.no-print{display:none!important}body,main{background:white;margin:0;padding:0;max-width:none}.card{box-shadow:none;padding:0;margin:0}#paper{border:0;padding:15mm;font-size:12pt}}
+</style></head>
+<body>
+<header><h1>FUTURE DOCUMENT DIGITIZATION WORK</h1><p>AI से पुरानी फोटो को साफ टाइप किए हुए डॉक्यूमेंट में बदलें</p></header>
+<main>
+<section class="card no-print">
+<h2>1. पुरानी फोटो चुनें</h2><p class="hint">गैलरी से फोटो चुनें या कैमरे से लें। साफ और पूरी फोटो से बेहतर परिणाम मिलेगा।</p>
+<input id="gallery" type="file" accept="image/*"><input id="camera" type="file" accept="image/*" capture="environment">
+<div class="row"><button class="blue" id="galleryBtn">🖼️ गैलरी से फोटो चुनें</button><button class="light" id="cameraBtn">📷 कैमरे से फोटो लें</button></div>
+<img id="source" class="preview" hidden alt="Selected document"><div class="status" id="status">पहले फोटो चुनें।</div>
+</section>
+<section class="card no-print">
+<h2>2. AI से पढ़ें और नया पेज बनाएं</h2><p class="hint">AI फोटो से हिंदी/अंग्रेजी टेक्स्ट, नंबर और टेबल पढ़कर टाइप किया हुआ ड्राफ्ट बनाएगा।</p>
+<button id="process" class="blue" style="width:100%" disabled>✨ AI से डॉक्यूमेंट तैयार करें</button><div id="aiStatus" class="status">फोटो चुनने के बाद यह बटन चालू होगा।</div>
+</section>
+<section class="card no-print">
+<h2>3. AI से निकला टेक्स्ट जाँचें</h2><p class="hint">नाम, तारीख, मात्रा और रकम मूल फोटो से मिलाएँ। अनिश्चित हिस्सों को AI [अस्पष्ट] लिखेगा।</p>
+<textarea id="result" placeholder="AI से तैयार टेक्स्ट यहाँ आएगा…"></textarea>
+<div class="row" style="margin-top:10px"><button id="refresh" class="light">प्रीव्यू अपडेट करें</button><button id="print" class="green">⬇️ PDF सेव / प्रिंट</button></div>
+</section>
+<section class="card"><h2>4. नया कंप्यूटर-टाइप पेज</h2><div id="paper" class="paper">आपका नया डॉक्यूमेंट यहाँ दिखाई देगा।</div></section>
+<div class="warn no-print"><b>जरूरी:</b> AI भी पुरानी/धुंधली फोटो में कुछ अक्षर या रकम गलत पढ़ सकता है। मूल फोटो से जाँचकर ही अंतिम PDF भेजें। API उपयोग पर शुल्क लग सकता है। API key केवल Vercel के server environment variable में रखें; इसे किसी को न भेजें।</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);let file=null;
+$('galleryBtn').onclick=()=>$('gallery').click();$('cameraBtn').onclick=()=>$('camera').click();
+function picked(f){if(!f)return;if(!f.type.startsWith('image/')){$('status').textContent='कृपया image फाइल चुनें।';return;}file=f;$('source').src=URL.createObjectURL(f);$('source').hidden=false;$('status').textContent='फोटो चुनी गई: '+f.name;$('process').disabled=false;}
+$('gallery').onchange=e=>{picked(e.target.files[0]);e.target.value='';};$('camera').onchange=e=>{picked(e.target.files[0]);e.target.value='';};
+function update(){ $('paper').textContent=$('result').value.trim()||'आपका नया डॉक्यूमेंट यहाँ दिखाई देगा।';}
+$('refresh').onclick=update;$('result').addEventListener('input',update);
+async function compressImage(file){
+ const bitmap=await createImageBitmap(file);
+ const max=1800,scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));
+ const canvas=document.createElement('canvas');canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
+ canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+ return canvas.toDataURL('image/jpeg',0.82);
+}
+$('process').onclick=async()=>{
+ if(!file)return;$('process').disabled=true;$('aiStatus').textContent='फोटो सुरक्षित सर्वर पर AI को भेजी जा रही है…';
+ try{
+  const imageData=await compressImage(file);
+  const res=await fetch('/api/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageData})});
+  const data=await res.json();if(!res.ok)throw new Error(data.error||'AI processing failed');
+  $('result').value=data.text||'';update();$('aiStatus').textContent='AI ने ड्राफ्ट तैयार किया। कृपया हर नाम और रकम जाँचें।';
+ }catch(e){$('aiStatus').textContent='काम पूरा नहीं हुआ: '+e.message+'. Vercel में OPENAI_API_KEY सेट है और साइट redeploy हुई है, यह जाँचें।';}
+ finally{$('process').disabled=false;}
+};
+$('print').onclick=()=>{update();if(!$('result').value.trim()){alert('पहले AI से डॉक्यूमेंट तैयार करें या टेक्स्ट लिखें।');return;}window.print();};
+</script></body></html>
